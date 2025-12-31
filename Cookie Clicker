@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cookie Clicker Clone</title>
+    <style>
+        :root {
+            --panel-bg: #1a1a1a;
+            --border-color: #5d4037;
+            --text-gold: #e1b12c;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            color: white;
+            font-family: "Trebuchet MS", Helvetica, sans-serif;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Left Panel - The Cookie & Stats */
+        #left-panel {
+            flex: 1;
+            background: linear-gradient(to bottom, #2980b9, #6dd5fa, #ffffff); /* Milk effect */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border-right: 4px solid var(--border-color);
+            padding-top: 20px;
+            position: relative;
+        }
+
+        #stats-bar {
+            background: rgba(0,0,0,0.6);
+            width: 100%;
+            text-align: center;
+            padding: 10px 0;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        #cookie-count { font-size: 28px; font-weight: bold; margin: 0; color: white; }
+        #cps-count { font-size: 16px; color: #ccc; }
+
+        #cookie-container {
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #cookie {
+            width: 250px;
+            height: 250px;
+            font-size: 180px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: transform 0.05s ease;
+            filter: drop-shadow(0 0 20px rgba(0,0,0,0.4));
+            user-select: none;
+        }
+
+        #cookie:active { transform: scale(0.92); }
+
+        /* Center Panel - News */
+        #center-panel {
+            flex: 1.5;
+            background-color: #000;
+            border-right: 4px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+        }
+
+        #news-ticker {
+            background: #222;
+            padding: 5px 15px;
+            border-bottom: 2px solid var(--border-color);
+            color: #ddd;
+            font-style: italic;
+            font-size: 14px;
+        }
+
+        /* Right Panel - Store */
+        #right-panel {
+            width: 300px;
+            background-color: #333;
+            overflow-y: auto;
+        }
+
+        .store-header {
+            background: #444;
+            padding: 10px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 20px;
+            border-bottom: 2px solid var(--border-color);
+            color: var(--text-gold);
+        }
+
+        .upgrade {
+            display: flex;
+            padding: 10px;
+            border-bottom: 1px solid #222;
+            cursor: pointer;
+            background: #4a4a4a;
+            transition: background 0.2s;
+        }
+
+        .upgrade:hover:not(.disabled) { background: #5a5a5a; }
+        .upgrade.disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(1); }
+
+        .upgrade-icon {
+            width: 50px;
+            height: 50px;
+            background: #222;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-right: 10px;
+            border-radius: 4px;
+        }
+
+        .upgrade-info { flex-grow: 1; }
+        .name { font-weight: bold; display: block; }
+        .cost { color: #66ff66; font-size: 14px; }
+        .count { float: right; font-size: 24px; opacity: 0.3; }
+
+    </style>
+</head>
+<body>
+
+    <div id="left-panel">
+        <div id="stats-bar">
+            <div id="cookie-count">0 cookies</div>
+            <div id="cps-count">per second: 0</div>
+        </div>
+        <div id="cookie-container">
+            <div id="cookie">🍪</div>
+        </div>
+    </div>
+
+    <div id="center-panel">
+        <div id="news-ticker">"Your cookies are popular in the neighborhood."</div>
+        <div style="padding: 20px; text-align: center; opacity: 0.2;">
+            <h2>Buildings Visuals Area</h2>
+            <p>(Add canvas graphics here)</p>
+        </div>
+    </div>
+
+    <div id="right-panel">
+        <div class="store-header">Store</div>
+        
+        <div class="upgrade disabled" id="buy-cursor" onclick="buy('cursor')">
+            <div class="upgrade-icon">🖱️</div>
+            <div class="upgrade-info">
+                <span class="name">Cursor</span>
+                <span class="cost" id="cursor-cost">15</span>
+            </div>
+            <div class="count" id="cursor-count">0</div>
+        </div>
+
+        <div class="upgrade disabled" id="buy-grandma" onclick="buy('grandma')">
+            <div class="upgrade-icon">👵</div>
+            <div class="upgrade-info">
+                <span class="name">Grandma</span>
+                <span class="cost" id="grandma-cost">100</span>
+            </div>
+            <div class="count" id="grandma-count">0</div>
+        </div>
+
+        <div class="upgrade disabled" id="buy-farm" onclick="buy('farm')">
+            <div class="upgrade-icon">🚜</div>
+            <div class="upgrade-info">
+                <span class="name">Farm</span>
+                <span class="cost" id="farm-cost">1,100</span>
+            </div>
+            <div class="count" id="farm-count">0</div>
+        </div>
+    </div>
+
+    <script>
+        let cookies = 0;
+        let cps = 0;
+
+        const data = {
+            cursor:  { cost: 15,   income: 0.1, count: 0 },
+            grandma: { cost: 100,  income: 1,   count: 0 },
+            farm:    { cost: 1100, income: 8,   count: 0 }
+        };
+
+        const cookieEl = document.getElementById('cookie');
+        const countEl = document.getElementById('cookie-count');
+        const cpsEl = document.getElementById('cps-count');
+
+        function updateUI() {
+            countEl.innerText = Math.floor(cookies).toLocaleString() + " cookies";
+            cpsEl.innerText = "per second: " + cps.toFixed(1);
+
+            for (let id in data) {
+                const item = data[id];
+                const btn = document.getElementById('buy-' + id);
+                const costBtn = document.getElementById(id + '-cost');
+                const countBtn = document.getElementById(id + '-count');
+                
+                costBtn.innerText = Math.ceil(item.cost).toLocaleString();
+                countBtn.innerText = item.count;
+
+                if (cookies >= item.cost) {
+                    btn.classList.remove('disabled');
+                } else {
+                    btn.classList.add('disabled');
+                }
+            }
+        }
+
+        function buy(id) {
+            const item = data[id];
+            if (cookies >= item.cost) {
+                cookies -= item.cost;
+                item.count++;
+                cps += item.income;
+                item.cost *= 1.15;
+                updateUI();
+            }
+        }
+
+        cookieEl.addEventListener('click', () => {
+            cookies++;
+            updateUI();
+        });
+
+        // Game Loop
+        setInterval(() => {
+            cookies += (cps / 10);
+            updateUI();
+        }, 100);
+
+        // Random News
+        const news = [
+            "Your cookies are being used for local currency.",
+            "A grandmother has been spotted outside your house.",
+            "Scientists say cookies are the new gold.",
+            "Local news: Local baker becomes millionaire overnight!"
+        ];
+        setInterval(() => {
+            document.getElementById('news-ticker').innerText = '"' + news[Math.floor(Math.random()*news.length)] + '"';
+        }, 8000);
+
+    </script>
+</body>
+</html>
