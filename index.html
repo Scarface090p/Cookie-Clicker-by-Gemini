@@ -3,45 +3,152 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ultimate Cookie Clicker: Complete Edition</title>
+    <title>Cookie Clicker: Deluxe Edition</title>
     <style>
-        :root { --border: #5d4037; --gold: #e1b12c; }
-        body { margin: 0; background: #000; color: white; font-family: "Trebuchet MS", sans-serif; display: flex; height: 100vh; overflow: hidden; user-select: none; }
+        :root { 
+            --border: #5d4037; 
+            --gold: #e1b12c; 
+            --panel-bg: rgba(0, 0, 0, 0.7);
+        }
 
-        /* Panels */
-        #left { flex: 1; background: linear-gradient(to bottom, #2980b9, #6dd5fa, #ffffff); border-right: 4px solid var(--border); display: flex; flex-direction: column; align-items: center; position: relative; }
-        #center { flex: 1.2; background: #111; border-right: 4px solid var(--border); display: flex; flex-direction: column; }
-        #right { width: 350px; background: #333; overflow-y: auto; border-left: 2px solid #222; }
+        body { 
+            margin: 0; 
+            background: radial-gradient(circle, #2c3e50 0%, #000000 100%);
+            color: white; 
+            font-family: "Trebuchet MS", sans-serif; 
+            display: flex; 
+            height: 100vh; 
+            overflow: hidden; 
+            user-select: none; 
+        }
+
+        /* Left Panel - The Cookie & Milk */
+        #left { 
+            flex: 1; 
+            background: linear-gradient(to bottom, #1e3c72, #2a5298);
+            border-right: 4px solid var(--border); 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            position: relative; 
+        }
+        
+        #milk-overlay {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 20%;
+            background: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 0 50px white;
+            transition: height 0.5s;
+        }
+
+        /* Center Panel - Upgrades & Achievements */
+        #center { 
+            flex: 1.2; 
+            background: var(--panel-bg);
+            border-right: 4px solid var(--border); 
+            display: flex; 
+            flex-direction: column; 
+        }
+
+        /* Right Panel - The Store */
+        #right { 
+            width: 350px; 
+            background: #333; 
+            overflow-y: auto; 
+            border-left: 2px solid #222; 
+            position: relative; 
+            z-index: 10; /* High priority for clicks */
+        }
 
         /* Cookie Stats */
-        #stats { background: rgba(0,0,0,0.8); width: 100%; text-align: center; padding: 20px 0; border-bottom: 2px solid var(--border); z-index: 5; }
-        #cookie { font-size: 160px; cursor: pointer; margin-top: 50px; transition: transform 0.05s; filter: drop-shadow(0 0 20px rgba(0,0,0,0.5)); }
+        #stats { 
+            background: rgba(0,0,0,0.8); 
+            width: 100%; 
+            text-align: center; 
+            padding: 20px 0; 
+            border-bottom: 2px solid var(--border); 
+            z-index: 5;
+        }
+
+        #cookie { 
+            font-size: 160px; 
+            cursor: pointer; 
+            margin-top: 50px; 
+            transition: transform 0.05s; 
+            filter: drop-shadow(0 0 40px rgba(0,0,0,0.6)); 
+            z-index: 2;
+        }
         #cookie:active { transform: scale(0.9); }
 
-        /* Upgrade Bar & Achievements */
-        #tech-bar { display: flex; flex-wrap: wrap; gap: 5px; padding: 10px; background: #222; min-height: 50px; border-bottom: 2px solid var(--border); }
-        .tech { width: 45px; height: 45px; background: #444; border: 2px solid var(--gold); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 24px; }
-        .tech.disabled { filter: grayscale(1); opacity: 0.4; cursor: not-allowed; }
-        
-        #achievements-area { flex-grow: 1; padding: 10px; overflow-y: auto; background: #0a0a0a; }
-        .ach-row { display: flex; align-items: center; gap: 10px; padding: 8px; margin-bottom: 5px; background: #1a1a1a; border-radius: 4px; opacity: 0.3; transition: opacity 0.5s; }
-        .ach-row.unlocked { opacity: 1; border: 1px solid var(--gold); }
+        /* Buy Toggle */
+        #buy-selector {
+            display: flex;
+            background: #222;
+            padding: 5px;
+            justify-content: center;
+            gap: 5px;
+        }
+        .buy-btn {
+            background: #444;
+            border: 1px solid #666;
+            color: #ccc;
+            padding: 5px 15px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .buy-btn.active {
+            background: var(--gold);
+            color: black;
+            font-weight: bold;
+        }
+
+        /* Upgrade Bar */
+        #tech-bar { 
+            display: flex; 
+            flex-wrap: wrap; 
+            gap: 5px; 
+            padding: 10px; 
+            background: #111; 
+            min-height: 50px; 
+            border-bottom: 2px solid var(--border);
+            overflow-y: auto;
+            max-height: 150px;
+        }
+        .tech { 
+            width: 40px; 
+            height: 40px; 
+            background: #444; 
+            border: 1px solid var(--gold); 
+            cursor: pointer; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-size: 20px;
+        }
+        .tech.disabled { filter: grayscale(1); opacity: 0.3; cursor: not-allowed; }
 
         /* Store Items */
-        .item { display: flex; align-items: center; padding: 12px; border-bottom: 1px solid #222; background: #4a4a4a; cursor: pointer; transition: 0.1s; }
+        .item { 
+            display: flex; 
+            align-items: center; 
+            padding: 12px; 
+            border-bottom: 1px solid #222; 
+            background: #4a4a4a; 
+            cursor: pointer; 
+        }
         .item:hover:not(.disabled) { background: #5a5a5a; }
-        .item.disabled { opacity: 0.4; cursor: not-allowed; filter: grayscale(0.8); }
-        .item-icon { width: 50px; height: 50px; background: #222; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 32px; margin-right: 12px; border: 1px solid #666; }
+        .item.disabled { opacity: 0.4; cursor: not-allowed; }
+        .item-icon { width: 50px; height: 50px; background: #222; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 32px; margin-right: 12px; }
         .item-info { flex-grow: 1; }
-        .item-name { font-weight: bold; font-size: 18px; display: block; }
+        .item-name { font-weight: bold; font-size: 16px; display: block; }
         .item-cost { color: #66ff66; font-weight: bold; font-size: 14px; }
-        .item-count { font-size: 32px; opacity: 0.2; font-weight: bold; }
+        .item-count { font-size: 28px; opacity: 0.2; font-weight: bold; }
 
-        /* Notifications */
+        /* Animations */
         .floating { position: fixed; pointer-events: none; font-weight: bold; font-size: 26px; color: white; text-shadow: 2px 2px black; animation: float 0.8s forwards; z-index: 1000; }
         @keyframes float { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-120px); opacity: 0; } }
-        
-        #news { padding: 10px; text-align: center; font-style: italic; background: #000; font-size: 14px; color: #aaa; border-top: 2px solid var(--border); }
     </style>
 </head>
 <body>
@@ -52,29 +159,34 @@
             <div id="cps-display" style="color: #ccc;">per second: 0</div>
         </div>
         <div id="cookie">🍪</div>
+        <div id="milk-overlay"></div>
     </div>
 
     <div id="center">
         <div style="background:#444; padding:8px; text-align:center; color:var(--gold); font-weight:bold;">UPGRADES</div>
         <div id="tech-bar"></div>
-        <div style="background:#444; padding:8px; text-align:center; color:var(--gold); font-weight:bold; border-top: 2px solid var(--border);">ACHIEVEMENTS</div>
-        <div id="achievements-area"></div>
-        <div id="news">"Welcome to your cookie empire."</div>
+        <div style="flex-grow:1; display:flex; flex-direction:column; justify-content:center; align-items:center; opacity:0.1; font-size:40px;">
+            BAKERY
+        </div>
         <div style="padding:15px; background:#111; display:flex; gap:10px; justify-content:center;">
-            <button onclick="save()">Save Game</button>
-            <button onclick="reset()">Hard Reset</button>
+            <button onclick="save()">Save</button>
+            <button onclick="reset()">Reset</button>
         </div>
     </div>
 
     <div id="right">
-        <div style="background:#444; padding:15px; text-align:center; color:var(--gold); font-weight:bold; font-size:20px; border-bottom: 2px solid var(--border);">STORE</div>
+        <div id="buy-selector">
+            <button id="buy1" class="buy-btn active" onclick="setBuyAmount(1)">Buy 1</button>
+            <button id="buy10" class="buy-btn" onclick="setBuyAmount(10)">Buy 10</button>
+            <button id="buy100" class="buy-btn" onclick="setBuyAmount(100)">Buy 100</button>
+        </div>
         <div id="store-list"></div>
     </div>
 
     <script>
         let state = {
-            cookies: 0, baked: 0, clicks: 0, clickVal: 1,
-            ownedTech: [], unlockedAch: [],
+            cookies: 0, baked: 0, clicks: 0, clickVal: 1, buyMode: 1,
+            ownedTech: [],
             buildings: {
                 cursor:  { n: "Cursor",   c: 15,     cps: 0.1, cnt: 0, i: "🖱️" },
                 grandma: { n: "Grandma",  c: 100,    cps: 1,   cnt: 0, i: "👵" },
@@ -82,98 +194,98 @@
                 mine:    { n: "Mine",     c: 12000,  cps: 47,  cnt: 0, i: "⛏️" },
                 factory: { n: "Factory",  c: 130000, cps: 260, cnt: 0, i: "🏭" },
                 bank:    { n: "Bank",     c: 1400000,cps: 1400,cnt: 0, i: "🏦" },
-                temple:  { n: "Temple",   c: 20000000,cps: 7800,cnt: 0,i: "🕍" },
-                wizard:  { n: "Wizard",   c: 330000000,cps: 44000,cnt:0,i: "🧙" },
-                ship:    { n: "Ship",     c: 5100000000,cps: 260000,cnt:0,i: "🚀" },
-                alch:    { n: "Alchemy",  c: 75000000000,cps: 1600000,cnt:0,i: "⚗️" },
-                portal:  { n: "Portal",   c: 1000000000000,cps: 10000000,cnt:0,i: "🌀" },
-                time:    { n: "Time Machine", c: 14000000000000,cps: 65000000,cnt:0,i: "⏳" }
+                portal:  { n: "Portal",   c: 1000000000, cps: 1000000, cnt: 0, i: "🌀" }
             }
         };
 
-        const upgrades = [
-            { id: 'u1', n: 'Reinforced Finger', cost: 100, type: 'click', mult: 2, i: '☝️', req: () => state.clicks >= 10 },
-            { id: 'u2', n: 'Rolling Pins', cost: 500, type: 'grandma', mult: 2, i: '🥢', req: () => state.buildings.grandma.cnt >= 1 },
-            { id: 'u3', n: 'Iron Mouse', cost: 2000, type: 'click', mult: 2, i: '🖱️', req: () => state.clicks >= 100 },
-            { id: 'u4', n: 'Fertilizer', cost: 10000, type: 'farm', mult: 2, i: '🌱', req: () => state.buildings.farm.cnt >= 1 }
-        ];
+        // Create 100 Clicking Upgrades (Fingers)
+        const upgrades = [];
+        for(let i = 1; i <= 100; i++) {
+            upgrades.push({
+                id: `finger_${i}`,
+                n: `Reinforced Finger #${i}`,
+                cost: Math.floor(100 * Math.pow(2.5, i)),
+                type: 'click',
+                mult: 2,
+                i: '☝️',
+                req: () => state.clicks >= (i * 10)
+            });
+        }
 
-        const achievements = [
-            { id: 'a1', n: 'Wake and Bake', d: 'Bake 1,000 cookies.', check: () => state.baked >= 1000, i: '🍪' },
-            { id: 'a2', n: 'Click Junkie', d: 'Click the cookie 100 times.', check: () => state.clicks >= 100, i: '🖱️' },
-            { id: 'a3', n: 'Cookie Billionaire', d: 'Bake 1,000,000 cookies.', check: () => state.baked >= 1000000, i: '💰' }
-        ];
+        function setBuyAmount(amt) {
+            state.buyMode = amt;
+            document.querySelectorAll('.buy-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('buy' + amt).classList.add('active');
+            refresh();
+        }
+
+        function getBulkCost(base, count, amt) {
+            let total = 0;
+            let current = base;
+            for(let i = 0; i < amt; i++) {
+                total += current;
+                current *= 1.15;
+            }
+            return Math.ceil(total);
+        }
+
+        function buyBuilding(k) {
+            let b = state.buildings[k];
+            let cost = getBulkCost(b.c, b.cnt, state.buyMode);
+            if (state.cookies >= cost) {
+                state.cookies -= cost;
+                for(let i = 0; i < state.buyMode; i++) {
+                    b.cnt++;
+                    b.c *= 1.15;
+                }
+                refresh();
+            }
+        }
+
+        function buyTech(id) {
+            let u = upgrades.find(x => x.id === id);
+            if (state.cookies >= u.cost) {
+                state.cookies -= u.cost;
+                state.ownedTech.push(id);
+                state.clickVal *= u.mult;
+                refresh();
+            }
+        }
 
         function getCPS() {
             let total = 0;
-            for (let k in state.buildings) {
-                let b = state.buildings[k];
-                let m = 1;
-                state.ownedTech.forEach(tid => {
-                    let u = upgrades.find(x => x.id === tid);
-                    if (u && u.type === k) m *= u.mult;
-                });
-                total += (b.cnt * b.cps * m);
-            }
+            for (let k in state.buildings) { total += (state.buildings[k].cnt * state.buildings[k].cps); }
             return total;
         }
 
         function refresh() {
             document.getElementById('cookies-display').innerText = Math.floor(state.cookies).toLocaleString() + " cookies";
             document.getElementById('cps-display').innerText = "per second: " + getCPS().toFixed(1);
+            
+            // Milk Level
+            document.getElementById('milk-overlay').style.height = Math.min(60, (state.baked / 1000)) + "%";
 
             // Store
             let sHtml = '';
             for (let k in state.buildings) {
                 let b = state.buildings[k];
-                sHtml += `<div class="item ${state.cookies < b.c ? 'disabled' : ''}" onclick="buyBuilding('${k}')">
+                let cost = getBulkCost(b.c, b.cnt, state.buyMode);
+                sHtml += `<div class="item ${state.cookies < cost ? 'disabled' : ''}" onclick="buyBuilding('${k}')">
                     <div class="item-icon">${b.i}</div>
-                    <div class="item-info"><span class="item-name">${b.n}</span><span class="item-cost">${Math.ceil(b.c).toLocaleString()}</span></div>
+                    <div class="item-info"><span class="item-name">${b.n} (x${state.buyMode})</span><span class="item-cost">${cost.toLocaleString()}</span></div>
                     <div class="item-count">${b.cnt}</div>
                 </div>`;
             }
             document.getElementById('store-list').innerHTML = sHtml;
 
-            // Upgrades
+            // Tech Bar
             let tHtml = '';
             upgrades.forEach(u => {
                 if (!state.ownedTech.includes(u.id) && u.req()) {
-                    tHtml += `<div class="tech ${state.cookies < u.cost ? 'disabled' : ''}" onclick="buyUpgrade('${u.id}')" title="${u.n}">${u.i}</div>`;
+                    tHtml += `<div class="tech ${state.cookies < u.cost ? 'disabled' : ''}" onclick="buyTech('${u.id}')" title="${u.n} - Cost: ${u.cost.toLocaleString()}">${u.i}</div>`;
                 }
             });
             document.getElementById('tech-bar').innerHTML = tHtml;
-
-            // Achievements
-            let aHtml = '';
-            achievements.forEach(a => {
-                let isU = state.unlockedAch.includes(a.id);
-                if (a.check() && !isU) state.unlockedAch.push(a.id);
-                aHtml += `<div class="ach-row ${state.unlockedAch.includes(a.id) ? 'unlocked' : ''}">
-                    <div style="font-size:24px;">${a.i}</div>
-                    <div><b>${a.n}</b><br><small>${a.d}</small></div>
-                </div>`;
-            });
-            document.getElementById('achievements-area').innerHTML = aHtml;
-        }
-
-        function buyBuilding(k) {
-            let b = state.buildings[k];
-            if (state.cookies >= b.c) {
-                state.cookies -= b.c;
-                b.cnt++;
-                b.c *= 1.15;
-                refresh();
-            }
-        }
-
-        function buyUpgrade(id) {
-            let u = upgrades.find(x => x.id === id);
-            if (state.cookies >= u.cost) {
-                state.cookies -= u.cost;
-                state.ownedTech.push(id);
-                if (u.type === 'click') state.clickVal *= u.mult;
-                refresh();
-            }
         }
 
         document.getElementById('cookie').onclick = (e) => {
@@ -189,12 +301,12 @@
             refresh();
         };
 
-        function save() { localStorage.setItem('cookie_v4', JSON.stringify(state)); }
+        function save() { localStorage.setItem('cookie_save', JSON.stringify(state)); }
         function reset() { if(confirm("Wipe all progress?")) { localStorage.clear(); location.reload(); }}
 
-        const saved = localStorage.getItem('cookie_v4');
+        const saved = localStorage.getItem('cookie_save');
         if (saved) {
-            state = Object.assign(state, JSON.parse(saved));
+            Object.assign(state, JSON.parse(saved));
             state.clickVal = 1;
             state.ownedTech.forEach(id => {
                 let u = upgrades.find(x => x.id === id);
@@ -203,7 +315,6 @@
         }
 
         setInterval(() => { state.cookies += (getCPS()/10); state.baked += (getCPS()/10); refresh(); }, 100);
-        setInterval(save, 30000);
         refresh();
     </script>
 </body>
